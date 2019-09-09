@@ -59,8 +59,13 @@ class Button(object):
 		self.hitbox = (self.x,self.y,self.w,self.h)
 
 	def Draw(self,win):
+		mouse = pygame.mouse.get_pos()
 
-		pygame.draw.rect(win,self.color,(self.hitbox[0],self.hitbox[1],self.hitbox[2],self.hitbox[3]))
+		if (mouse[0] >= self.x and mouse[0] <= self.x + self.w) and (mouse[1] >= self.y and mouse[1] <= self.y + self.h):
+			pygame.draw.rect(win,red,(self.x,self.y,self.w,self.h))
+		else:
+			pygame.draw.rect(win,green,(self.x,self.y,self.w,self.h))
+
 
 
 

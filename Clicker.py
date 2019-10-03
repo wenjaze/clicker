@@ -2,16 +2,20 @@ import pygame
 import math
 import random
 
+pygame.mixer.pre_init(44100, -16, 1, 512)
 pygame.init()
 
+
+# SCREEN DIMENSIONS
 screenWidth = 1280
 screenHeight = 720
 
+# BASE BUTTON DIMENSIONS
 buttonW = 90
 buttonH = 30
 
 
-
+# COLORS
 red = (255,0,0)
 green = (0,190,0)
 blue = (0,0,255)
@@ -19,7 +23,11 @@ white = (255,255,255)
 black = (0,0,0)
 light_green = (80,190,80)
 
+# SOUNDS
+hitSound = pygame.mixer.Sound('hit.wav')
+missSound = pygame.mixer.Sound('miss.wav')
 
+# FONTS
 small_font = pygame.font.SysFont('mono',15)
 big_font = pygame.font.SysFont('mono',40)
 
@@ -112,7 +120,7 @@ def Redrawgamewindow(reaction_time,average,Clicks):
 	win.fill(black)
 	# reaction_text = small_font.render("your last reaction time was : " + str(reaction_time),1,black)
 	
-	REACTION_TEXT = Text(screenWidth/2,screenHeight/2,"mono",20,"Your reaction time was : "+str(reaction_time),black)
+	REACTION_TEXT = Text(screenWidth/2-50,screenHeight/2,"mono",100,str(round(reaction_time,2)),white)
 	REACTION_TEXT.Draw(win)
 
 	for Click in Clicks:
@@ -130,7 +138,7 @@ def Miss():
 	pass
 
 
-def Scoreboard(average,missed_all,distance,accuracy):
+def Scoreboard(average,missed_all,distance):
 
 	scoreBoard = True
 	
@@ -138,11 +146,10 @@ def Scoreboard(average,missed_all,distance,accuracy):
 		
 		win.fill(white)
 		
-		AVG_TEXT = Text(screenWidth/2-300,screenHeight/2+60,'mono',30,"Your average reaction time was : " + str(average)+ "s",red)
-		PRESS_TEXT = Text(screenWidth/2-300,screenHeight/2+60*2,'mono',20,"Press [SPACE] for New Game or [ESC] for Main Menu",black)
-		MISSED_TEXT = Text(screenWidth/2-300,screenHeight/2+60*3,'mono',20,"MISSED SQUARES : " + str(missed_all),black)
-		ACCURACY_TEXT = Text(screenWidth/2-300,screenHeight/2+60*4,'mono',20,"ACCURACY : " + str(accuracy)+"%",black)
-		MISSED_DISTANCE_TEXT = Text(screenWidth/2-300,screenHeight/2+60*5,'mono',20,"TOTAL MISSED DISTANCE : "+str(distance)+" pixels",black)
+		AVG_TEXT = Text(screenWidth/2-400,screenHeight/2+60,'mono',30,"Your average reaction time was : " + str(average)+ "s",red)
+		PRESS_TEXT = Text(screenWidth/2-400,screenHeight/2+60*2,'mono',20,"Press [SPACE] for New Game or [ESC] for Main Menu",black)
+		MISSED_TEXT = Text(screenWidth/2-400,screenHeight/2+60*3,'mono',20,"MISSED SQUARES : " + str(missed_all),black)
+		MISSED_DISTANCE_TEXT = Text(screenWidth/2-400,screenHeight/2+60*4,'mono',20,"TOTAL MISSED DISTANCE : "+str(distance)+" pixels",black)
 		
 		# Avg = end_font.render("YOUR AVERAGE REACTION TIME WAS : " + str(average) + "s",1,red)
 		# press = font.render("PRESS [SPACE] FOR NEW GAME OR [ESC] FOR MAIN MENU",2,black)
@@ -151,26 +158,25 @@ def Scoreboard(average,missed_all,distance,accuracy):
 		AVG_TEXT.Draw(win)
 		PRESS_TEXT.Draw(win)
 		MISSED_TEXT.Draw(win)
-		ACCURACY_TEXT.Draw(win)
 		MISSED_DISTANCE_TEXT.Draw(win)
 
 
-		a# win.blit(Avg,(screenWidth/2-300,screenHeight/2))
+		# win.blit(Avg,(screenWidth/2-300,screenHeight/2))
 		
 		keys = pygame.key.get_pressed()
 		
 		if keys[pygame.K_SPACE]:
-			return
+			GameLoop(game_length)
 			scoreBoard = False
 
 		elif keys[pygame.K_ESCAPE]:
 			Menu()
 
 		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				quit()
 
-	            	if event.type == pygame.QUIT:
-	                	pygame.quit()
-	                	quit()
 		pygame.display.update()
 		clock.tick(30)
 
@@ -189,7 +195,7 @@ def Collision(x,y,w,h):
 
 
 def Menu():
-
+	NumberOfObjects = 5
 	intro = True
 
 	while intro:
@@ -199,8 +205,7 @@ def Menu():
 
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
-				pygame.quit()
-				quit()
+				QuitGame()
 
 		win.fill(white)
 		
@@ -214,7 +219,7 @@ def Menu():
 		button_increase = Button(screenWidth/5,screenHeight/5,30,30,light_green,green)
 		button_decrease = Button(screenWidth/5,screenHeight/5+button_increase.h+30,30,30,light_green,green)
 		# Declaring Texts
-		# NUMBEROFOBJECTS_TEXT = Text(screenWidth/5-170,screenHeight/5+40,'mono',15,"Number of Objects : "+str(NumberOfObjects),black)
+		NUMBEROFOBJECTS_TEXT = Text(screenWidth/5-170,screenHeight/5+40,'mono',15,"Objects to click : "+str(NumberOfObjects),black)
 
 		
 		# Drawing buttons
@@ -223,7 +228,7 @@ def Menu():
 		button_increase.DrawWithText(win,"+",black,big_font)
 		button_decrease.DrawWithText(win,"-",black,big_font)
 		# Drawing texts
-		# NUMBEROFOBJECTS_TEXT.Draw(win)
+		NUMBEROFOBJECTS_TEXT.Draw(win)
 
 
 
@@ -232,21 +237,23 @@ def Menu():
 		# elif Collision(button_decrease.x,button_decrease.y,button_decrease.w,button_decrease.h):
 		# 	NumberOfObjects -= 1
 
-		def Increase(nr):
-			print('NEM HIVODIK')
-			return nr + 1
+		# def Increase(nr):
+		# 	print('NEM HIVODIK')
+		# 	return nr + 1
 
-		event = pygame.event.get()
-		if pygame.mouse.get_pressed()[0]:
-			c = True
-			if (mouse[0] >= button1.x and mouse[0] <= button1.x + button1.w) and (mouse[1] >= button1.y and mouse[1] <= button1.y + button1.h):
-				GameLoop(game_length)
-			elif (mouse[0] >= button_increase.x and mouse[0] <= button_increase.x + button_increase.w) and (mouse[1] >= button_increase.y and mouse[1] <= button_increase.y + button_increase.h):
-				Increase(NumberOfObjects)
+		event = pygame.event.wait()
+		
+		if event.type == pygame.MOUSEBUTTONDOWN:
+			if (mouse[0] >= button_increase.x and mouse[0] <= button_increase.x + button_increase.w) and (mouse[1] >= button_increase.y and mouse[1] <= button_increase.y + button_increase.h):
+				if NumberOfObjects >= 5:
+					NumberOfObjects += 1
+			elif (mouse[0] >= button1.x and mouse[0] <= button1.x + button1.w) and (mouse[1] >= button1.y and mouse[1] <= button1.y + button1.h):
+				GameLoop(NumberOfObjects)
 			elif (mouse[0] >= button2.x and mouse[0] <= button2.x + button2.w) and (mouse[1] >= button2.y and mouse[1] <= button2.y + button2.h):
 				QuitGame()
 			elif (mouse[0] >= button_decrease.x and mouse[0] <= button_decrease.x + button_decrease.w) and (mouse[1] >= button_decrease.y and mouse[1] <= button_decrease.y + button_decrease.h):
-				NumberOfObjects-=1
+				if NumberOfObjects > 5:
+					NumberOfObjects-=1
 		# if Collision(button1.x,button1.y,button1.w,button1.h):
 		# 	GameLoop(game_length)
 		# elif Collision(button2.x,button2.y,button2.w,button2.h):
@@ -258,7 +265,7 @@ def Menu():
 		# 	QuitGame()
 
 		pygame.display.update()
-		clock.tick(60)
+		clock.tick(120)
 
 
 game_length = 5
@@ -317,6 +324,7 @@ def GameLoop(game_length):
 				if events.type == pygame.MOUSEBUTTONDOWN:
 					spawned_all+=1
 					if ((mouse[0] >= Click.x and mouse[0] <= Click.x + Click.w) and (mouse[1] >= Click.y and mouse[1] <= Click.y + Click.h)):
+						hitSound.play()
 						Click.visible = False
 						Clicks.pop(Clicks.index(Click))
 						spawned -= 1
@@ -324,13 +332,22 @@ def GameLoop(game_length):
 						reaction_time = round(pygame.time.get_ticks() - spawn_time)/1000
 						times.append(reaction_time)
 					else:
+						missSound.play()
 						Clicks.pop(Clicks.index(Click))
 						distance += round(math.sqrt((Click.x+Click.w/2) + (Click.y+Click.h/2)),2)			
 						missed += 1
 						spawned -= 1
 						# pos.append(abs(Click.x+Click.w - mouse[0]) + abs(Click.y+Click.h - mouse[1]))
 						# print(abs(Click.x - mouse[0]) + abs(Click.y - mouse[1]))
-					
+		
+		keys = pygame.key.get_pressed()
+		
+		if keys[pygame.K_SPACE]:
+			GameLoop(game_length)
+			scoreBoard = False
+
+		elif keys[pygame.K_ESCAPE]:
+			Menu()
 
 		for events in all_events:
 			if events.type == pygame.QUIT:
@@ -341,7 +358,6 @@ def GameLoop(game_length):
 			for time in times:
 				average += time
 			average = round((average / len(times)),2)
-			accuracy = round(clicked/spawned_all*100,2)
 			clicked = 0
 			missed_all = missed
 			missed = 0
@@ -350,8 +366,10 @@ def GameLoop(game_length):
 			# for p in pos:
 			# 	print(p)
 			# 	print(str(pos.index(p)) + ". position : ")
-			Scoreboard(average,missed_all,distance,accuracy)
+			Scoreboard(average,missed_all,distance)
 
+		distance=0
+		average = 0
 
 		Redrawgamewindow(reaction_time,average,Clicks)
 

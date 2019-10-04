@@ -26,6 +26,14 @@ light_green = (80,190,80)
 # SOUNDS
 hitSound = pygame.mixer.Sound('hit.wav')
 missSound = pygame.mixer.Sound('miss.wav')
+countSound = pygame.mixer.Sound('count_sound.wav')
+goSound = pygame.mixer.Sound('go.wav')
+clickSound = pygame.mixer.Sound('buttonClick.wav')
+
+# MUSIC
+music = pygame.mixer.music.load('music.mp3')
+
+
 
 # FONTS
 small_font = pygame.font.SysFont('mono',15)
@@ -108,13 +116,6 @@ class Button(object):
 			pygame.draw.rect(win,self.nac,(self.x,self.y,self.w,self.h))
 			DrawText(text,textcolor)
 
-
-
-
-
-
-
-
 def Redrawgamewindow(reaction_time,average,Clicks):
 
 	win.fill(black)
@@ -137,8 +138,7 @@ def QuitGame():
 def Miss():
 	pass
 
-
-def Scoreboard(average,missed_all,distance):
+def Scoreboard(average,missed_all,distance,size_of_targets):
 
 	scoreBoard = True
 	
@@ -149,7 +149,7 @@ def Scoreboard(average,missed_all,distance):
 		AVG_TEXT = Text(screenWidth/2-400,screenHeight/2+60,'mono',30,"Your average reaction time was : " + str(average)+ "s",red)
 		PRESS_TEXT = Text(screenWidth/2-400,screenHeight/2+60*2,'mono',20,"Press [SPACE] for New Game or [ESC] for Main Menu",black)
 		MISSED_TEXT = Text(screenWidth/2-400,screenHeight/2+60*3,'mono',20,"MISSED SQUARES : " + str(missed_all),black)
-		MISSED_DISTANCE_TEXT = Text(screenWidth/2-400,screenHeight/2+60*4,'mono',20,"TOTAL MISSED DISTANCE : "+str(distance)+" pixels",black)
+		# MISSED_DISTANCE_TEXT = Text(screenWidth/2-400,screenHeight/2+60*4,'mono',20,"TOTAL MISSED DISTANCE : "+str(distance)+" pixels",black)
 		
 		# Avg = end_font.render("YOUR AVERAGE REACTION TIME WAS : " + str(average) + "s",1,red)
 		# press = font.render("PRESS [SPACE] FOR NEW GAME OR [ESC] FOR MAIN MENU",2,black)
@@ -158,7 +158,7 @@ def Scoreboard(average,missed_all,distance):
 		AVG_TEXT.Draw(win)
 		PRESS_TEXT.Draw(win)
 		MISSED_TEXT.Draw(win)
-		MISSED_DISTANCE_TEXT.Draw(win)
+		# MISSED_DISTANCE_TEXT.Draw(win)
 
 
 		# win.blit(Avg,(screenWidth/2-300,screenHeight/2))
@@ -166,11 +166,11 @@ def Scoreboard(average,missed_all,distance):
 		keys = pygame.key.get_pressed()
 		
 		if keys[pygame.K_SPACE]:
-			GameLoop(game_length)
+			GameLoop(game_length,size_of_targets)
 			scoreBoard = False
 
 		elif keys[pygame.K_ESCAPE]:
-			Menu()
+			Menu(size_of_targets)
 
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
@@ -181,22 +181,50 @@ def Scoreboard(average,missed_all,distance):
 		clock.tick(30)
 
 
-def Collision(x,y,w,h):
-	mouse = pygame.mouse.get_pos()
-	events = pygame.event.get()
-	for ev in events:
-		if ev.type == pygame.MOUSEBUTTONDOWN:
-					print("fasz")
-					if (mouse[0] >= x and mouse[0] <= x + w) and (mouse[1] >= y and mouse[1] <= y + h):
-						Coll = True
-					else:
-						Coll = False
+# def Collision(x,y,w,h):
+# 	mouse = pygame.mouse.get_pos()
+# 	events = pygame.event.get()
+# 	for ev in events:
+# 		if ev.type == pygame.MOUSEBUTTONDOWN:
+# 					
+# 					if (mouse[0] >= x and mouse[0] <= x + w) and (mouse[1] >= y and mouse[1] <= y + h):
+# 						Coll = True
+# 					else:
+# 						Coll = False
+
+def CountDown():
+	pygame.mixer.music.stop()
+	for x in range(4,0,-1):
+		
+		win.fill(black)
+		if x > 1:
+			CountDownText = Text(screenWidth/2-50,screenHeight/2-50,'mono',100,str(x-1),white) 
+			CountDownText.Draw(win)
+			countSound.play()
+		elif x <= 1:
+			GoText = Text(screenWidth/2-80,screenHeight/2-50,'mono',100,"GO",green)
+			GoText.Draw(win)
+			goSound.play()
+
+		pygame.display.update()
+		clock.tick(120)
+		pygame.time.wait(1000)
+		
+
+	
+	
+	pygame.display.update()
+	clock.tick(120)
+	
 
 
-
-def Menu():
+def Menu(size_of_targets):
+	pygame.mixer.music.play(-1)
 	NumberOfObjects = 5
+	ObjSizeList = ['random','10','20','30','40','50','60']
+	ObjSizeListIndex=ObjSizeList.index(str(size_of_targets))
 	intro = True
+
 
 	while intro:
 
@@ -210,31 +238,40 @@ def Menu():
 		win.fill(white)
 		
 
-		# button1 = pygame.draw.rect(win,red,(screenWidth/2-buttonW/2,screenHeight/2-30,buttonW,buttonH))
+		# NewGameButton = pygame.draw.rect(win,red,(screenWidth/2-buttonW/2,screenHeight/2-30,buttonW,buttonH))
 
 		
 		# Declaring buttons
-		button1 = Button(screenWidth/2-buttonW/2,screenHeight/2-30,buttonW,buttonH,light_green,green)
-		button2 = Button(screenWidth/2-buttonW/2,screenHeight/2+10,buttonW,buttonH,light_green,green)
-		button_increase = Button(screenWidth/5,screenHeight/5,30,30,light_green,green)
-		button_decrease = Button(screenWidth/5,screenHeight/5+button_increase.h+30,30,30,light_green,green)
-		# Declaring Texts
-		NUMBEROFOBJECTS_TEXT = Text(screenWidth/5-170,screenHeight/5+40,'mono',15,"Objects to click : "+str(NumberOfObjects),black)
+		NewGameButton = Button(screenWidth/2-buttonW/2,screenHeight/2-30,buttonW,buttonH,light_green,green)
+		QuitGameButton = Button(screenWidth/2-buttonW/2,screenHeight/2+10,buttonW,buttonH,light_green,green)
+		IncreaseNumberOfObj = Button(screenWidth/5,screenHeight/5,30,30,light_green,green)
+		DecreaseNumberOfObj = Button(screenWidth/5,screenHeight/5+IncreaseNumberOfObj.h+30,30,30,light_green,green)
+		IncreaseSizeOfObj = Button(screenWidth/5,screenHeight/5+200,30,30,light_green,green)
+		DecreaseSizeOfObj = Button(screenWidth/5,screenHeight/5+IncreaseNumberOfObj.h+30+200,30,30,light_green,green)
+		
 
 		
+
+		# Declaring Texts
+		NUMBEROFOBJECTS_TEXT = Text(screenWidth/5-170,screenHeight/5+40,'mono',15,"Targets to click :  "+str(NumberOfObjects),black)
+		SIZEOFTARGETS_TEXT = Text(screenWidth/5-170,screenHeight/5+240,'mono',15,"Size of Targets :  "+ObjSizeList[ObjSizeListIndex],black)
+		
 		# Drawing buttons
-		button1.DrawWithText(win,"New Game",black,small_font)
-		button2.DrawWithText(win,"Quit",black,small_font)
-		button_increase.DrawWithText(win,"+",black,big_font)
-		button_decrease.DrawWithText(win,"-",black,big_font)
+		NewGameButton.DrawWithText(win,"New Game",black,small_font)
+		QuitGameButton.DrawWithText(win,"Quit",black,small_font)
+		IncreaseNumberOfObj.DrawWithText(win,"+",black,big_font)
+		DecreaseNumberOfObj.DrawWithText(win,"-",black,big_font)
+		IncreaseSizeOfObj.DrawWithText(win,"+",black,big_font)
+		DecreaseSizeOfObj.DrawWithText(win,"-",black,big_font)
 		# Drawing texts
 		NUMBEROFOBJECTS_TEXT.Draw(win)
+		SIZEOFTARGETS_TEXT.Draw(win)
 
 
 
-		# if Collision(button_increase.x,button_increase.y,button_increase.w,button_increase.h):
+		# if Collision(IncreaseNumberOfObj.x,IncreaseNumberOfObj.y,IncreaseNumberOfObj.w,IncreaseNumberOfObj.h):
 		# 	NumberOfObjects += 1
-		# elif Collision(button_decrease.x,button_decrease.y,button_decrease.w,button_decrease.h):
+		# elif Collision(DecreaseNumberOfObj.x,DecreaseNumberOfObj.y,DecreaseNumberOfObj.w,DecreaseNumberOfObj.h):
 		# 	NumberOfObjects -= 1
 
 		# def Increase(nr):
@@ -244,35 +281,47 @@ def Menu():
 		event = pygame.event.wait()
 		
 		if event.type == pygame.MOUSEBUTTONDOWN:
-			if (mouse[0] >= button_increase.x and mouse[0] <= button_increase.x + button_increase.w) and (mouse[1] >= button_increase.y and mouse[1] <= button_increase.y + button_increase.h):
+			if (mouse[0] >= IncreaseNumberOfObj.x and mouse[0] <= IncreaseNumberOfObj.x + IncreaseNumberOfObj.w) and (mouse[1] >= IncreaseNumberOfObj.y and mouse[1] <= IncreaseNumberOfObj.y + IncreaseNumberOfObj.h):
+				clickSound.play()
 				if NumberOfObjects >= 5:
 					NumberOfObjects += 1
-			elif (mouse[0] >= button1.x and mouse[0] <= button1.x + button1.w) and (mouse[1] >= button1.y and mouse[1] <= button1.y + button1.h):
-				GameLoop(NumberOfObjects)
-			elif (mouse[0] >= button2.x and mouse[0] <= button2.x + button2.w) and (mouse[1] >= button2.y and mouse[1] <= button2.y + button2.h):
-				QuitGame()
-			elif (mouse[0] >= button_decrease.x and mouse[0] <= button_decrease.x + button_decrease.w) and (mouse[1] >= button_decrease.y and mouse[1] <= button_decrease.y + button_decrease.h):
+			elif (mouse[0] >= DecreaseNumberOfObj.x and mouse[0] <= DecreaseNumberOfObj.x + DecreaseNumberOfObj.w) and (mouse[1] >= DecreaseNumberOfObj.y and mouse[1] <= DecreaseNumberOfObj.y + DecreaseNumberOfObj.h):
+				clickSound.play()
 				if NumberOfObjects > 5:
 					NumberOfObjects-=1
-		# if Collision(button1.x,button1.y,button1.w,button1.h):
-		# 	GameLoop(game_length)
-		# elif Collision(button2.x,button2.y,button2.w,button2.h):
-		# 	QuitGame()
+			elif (mouse[0] >= IncreaseSizeOfObj.x and mouse[0] <= IncreaseSizeOfObj.x + IncreaseSizeOfObj.w) and (mouse[1] >= IncreaseSizeOfObj.y and mouse[1] <= IncreaseSizeOfObj.y + IncreaseSizeOfObj.h):
+				clickSound.play()
+				if ObjSizeListIndex < len(ObjSizeList)-1:
+					ObjSizeListIndex+=1
+			elif (mouse[0] >= DecreaseSizeOfObj.x and mouse[0] <= DecreaseSizeOfObj.x + DecreaseSizeOfObj.w) and (mouse[1] >= DecreaseSizeOfObj.y and mouse[1] <= DecreaseSizeOfObj.y + DecreaseSizeOfObj.h):
+				clickSound.play()
+				if ObjSizeListIndex > 0:
+					ObjSizeListIndex-=1
 
-		# if (mouse[0] >= screenWidth/2 - buttonW/2 and mouse[0] <= screenWidth/2 + buttonW/2) and (mouse[1] >= screenHeight/2-30 and mouse[1] <= screenHeight/2-30 + buttonH) and pygame.mouse.get_pressed()[0]:
-		#  	GameLoop()
-		# elif (mouse[0] >= screenWidth/2 - buttonW/2 and mouse[0] <= screenWidth/2 + buttonW/2) and (mouse[1] >= screenHeight/2+10 and mouse[1] <= screenHeight/2 + buttonH) and pygame.mouse.get_pressed()[0]:
-		# 	QuitGame()
+			
 
+			elif (mouse[0] >= NewGameButton.x and mouse[0] <= NewGameButton.x + NewGameButton.w) and (mouse[1] >= NewGameButton.y and mouse[1] <= NewGameButton.y + NewGameButton.h):
+				clickSound.play()
+				GameLoop(NumberOfObjects,ObjSizeList[ObjSizeListIndex])
+			elif (mouse[0] >= QuitGameButton.x and mouse[0] <= QuitGameButton.x + QuitGameButton.w) and (mouse[1] >= QuitGameButton.y and mouse[1] <= QuitGameButton.y + QuitGameButton.h):
+				clickSound.play()
+				QuitGame()
+			
+			size_of_targets = ObjSizeList[ObjSizeListIndex]
+
+
+		
 		pygame.display.update()
 		clock.tick(120)
 
-
+size_of_targets = 10
 game_length = 5
 
 
-def GameLoop(game_length):
+def GameLoop(game_length,size_of_targets):
 
+	CountDown()
+	pygame.mixer.music.stop()
 	spawned_all = 0
 	hit_all = 0
 	accuracy = 0
@@ -307,11 +356,15 @@ def GameLoop(game_length):
 		all_events = pygame.event.get()
 
 
+		
 		# SPAWNING
 		if spawned < max_spawned:
-			Clicks.append(ClickObj(random.randint(20,60),light_green,green))
+			if size_of_targets == 'random':
+				Clicks.append(ClickObj(random.randint(20,60),white,green))
+			else:
+				Clicks.append(ClickObj(int(size_of_targets),white,green))
 			spawn_time = pygame.time.get_ticks()
-			spawned += 1
+			spawned += 1	
 
 
 			
@@ -334,7 +387,7 @@ def GameLoop(game_length):
 					else:
 						missSound.play()
 						Clicks.pop(Clicks.index(Click))
-						distance += round(math.sqrt((Click.x+Click.w/2) + (Click.y+Click.h/2)),2)			
+						# distance += round(math.sqrt((Click.x+Click.w/2) + (Click.y+Click.h/2)),2)			
 						missed += 1
 						spawned -= 1
 						# pos.append(abs(Click.x+Click.w - mouse[0]) + abs(Click.y+Click.h - mouse[1]))
@@ -347,7 +400,7 @@ def GameLoop(game_length):
 			scoreBoard = False
 
 		elif keys[pygame.K_ESCAPE]:
-			Menu()
+			Menu(size_of_targets)
 
 		for events in all_events:
 			if events.type == pygame.QUIT:
@@ -366,25 +419,13 @@ def GameLoop(game_length):
 			# for p in pos:
 			# 	print(p)
 			# 	print(str(pos.index(p)) + ". position : ")
-			Scoreboard(average,missed_all,distance)
+			Scoreboard(average,missed_all,distance,size_of_targets)
 
-		distance=0
+		distance = 0
 		average = 0
 
 		Redrawgamewindow(reaction_time,average,Clicks)
 
-Menu()
-GameLoop(game_length,distance)
+Menu(size_of_targets)
+GameLoop(game_length,size_of_targets)
 QuitGame()
-
-
-
-
-
-
-
-
-
-
-	#for event in pygame.event.get():
-	#	print(event)
